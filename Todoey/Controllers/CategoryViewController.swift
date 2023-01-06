@@ -8,7 +8,7 @@
 
 import UIKit
 import RealmSwift
-//import ChameleonFramework
+import ChameleonFramework
 
 class CategoryViewController: SwipeTableViewController {
     
@@ -20,6 +20,27 @@ class CategoryViewController: SwipeTableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        loadCategories()
+        
+        tableView.separatorStyle = .none
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        
+//        super.viewWillAppear(true)
+//        if let navBarBackgroundColor = UIColor(hexString: "1D9BF6") {
+//            updateNavBarColor(navBarBackgroundColor)
+//        }
+        guard let navBar = navigationController?.navigationBar else {
+            fatalError("Navigation controller does not exist.")
+        }
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(hexString: "1D9BF6")
+        appearance.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: ContrastColorOf(appearance.backgroundColor!, returnFlat: true)]
+        navBar.standardAppearance = appearance
+        navBar.scrollEdgeAppearance = navBar.standardAppearance
         
         loadCategories()
     }
@@ -35,6 +56,11 @@ class CategoryViewController: SwipeTableViewController {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories added yet"
         
+        if let category = categories?[indexPath.row] {
+            guard let categoryColour = UIColor(hexString: category.colour) else {fatalError()}
+            cell.backgroundColor = categoryColour
+            cell.textLabel?.textColor = ContrastColorOf(categoryColour, returnFlat: true)
+        }
         return cell
     }
     
@@ -78,6 +104,7 @@ class CategoryViewController: SwipeTableViewController {
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
             let newCategory = Category()
             newCategory.name = textField.text!
+            newCategory.colour = UIColor.randomFlat().hexValue()
             self.save(category: newCategory)
         }
         
